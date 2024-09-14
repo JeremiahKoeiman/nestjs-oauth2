@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Post, Query, Req, Res, Session, UseFilters, UseGuards } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/camelcase */
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  Res,
+  Session,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthorizeDto, ConsentDto } from '../dto';
 import { CodeService } from '../services';
 import { CurrentUser } from '@app/modules/auth';
@@ -8,14 +20,19 @@ import { PromptTypes } from '../constants';
 import { AuthorizeForbiddenExceptionFilter } from '../filters/authorize-forbidden-exception.filter';
 import { AuthorizeGuard, ClientAuthGuard, PkceGuard } from '../guards';
 import { OAuthExceptionFilter, RFC6749ExceptionFilter } from '../filters';
-import { getAuthRequestFromSession, handleResponseMode } from '@app/modules/oauth2/utils';
+import {
+  getAuthRequestFromSession,
+  handleResponseMode,
+} from '@app/modules/oauth2/utils';
 
-@UseFilters(RFC6749ExceptionFilter, AuthorizeForbiddenExceptionFilter, OAuthExceptionFilter)
+@UseFilters(
+  RFC6749ExceptionFilter,
+  AuthorizeForbiddenExceptionFilter,
+  OAuthExceptionFilter,
+)
 @Controller('oauth2')
 export class AuthorizeController {
-  constructor(
-    private readonly service: CodeService,
-  ) {}
+  constructor(private readonly service: CodeService) {}
 
   /**
    * /oauth2/authorize endpoint
@@ -32,40 +49,44 @@ export class AuthorizeController {
     @Query() query: AuthorizeDto,
     @CurrentUser() user: User,
     @Session() session: any,
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: any,
+    @Res() res: any,
   ) {
     /**
      * Validate request parameters and generate a AuthRequest to be persisted in the session
      */
-    const { authRequest, skip } = await this.service.validateAuthorizationRequest(query, user);
+    const {
+      authRequest,
+      skip,
+    } = await this.service.validateAuthorizationRequest(query, user);
     if (skip) {
       /**
        * The user already granted the requested permissions and those permissions are not expired yet,
        * or the client is firstParty and doesn't need user consent.
        * Automatically generate the auth code and successfully redirect to the redirect_uri
        */
-      const { returnTo, state, code } = await this.service.completeAuthorizationRequest(authRequest, user, true);
-      return handleResponseMode(
-        res,
-        authRequest.responseMode,
+      const {
         returnTo,
-        { state, code },
+        state,
+        code,
+      } = await this.service.completeAuthorizationRequest(
+        authRequest,
+        user,
+        true,
       );
+      return handleResponseMode(res, authRequest.responseMode, returnTo, {
+        state,
+        code,
+      });
     } else if (query.prompt === PromptTypes.none) {
       /**
        * Consent cannot be skipped but the request does not permit user interaction
        * Redirect to the redirect_uri with an error
        */
-      return handleResponseMode(
-        res,
-        query.response_mode,
-        query.redirect_uri,
-        {
-          error: 'interaction_required',
-          state: query.state,
-        },
-      );
+      return handleResponseMode(res, query.response_mode, query.redirect_uri, {
+        error: 'interaction_required',
+        state: query.state,
+      });
     }
     /**
      * Consent cannot be skipped,
@@ -106,13 +127,19 @@ export class AuthorizeController {
     /**
      * Generate the auth code and successfully redirect to the redirect_uri
      */
-    const { returnTo, state, code } = await this.service.completeAuthorizationRequest(authRequest, user, true);
-    return handleResponseMode(
-      res,
-      authRequest.responseMode,
+    const {
       returnTo,
-      { state, code },
+      state,
+      code,
+    } = await this.service.completeAuthorizationRequest(
+      authRequest,
+      user,
+      true,
     );
+    return handleResponseMode(res, authRequest.responseMode, returnTo, {
+      state,
+      code,
+    });
   }
 
   /**
@@ -146,6 +173,6 @@ export class AuthorizeController {
         error_description: 'The user denied the request',
         state: authRequest.state,
       },
-    )
+    );
   }
 }

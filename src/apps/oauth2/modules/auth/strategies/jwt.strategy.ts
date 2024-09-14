@@ -24,17 +24,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       passReqToCallback: true,
     });
 
-    (Strategy as any).JwtVerifier = (token, keyName, __, cb: (err: any, payload: any) => void) => {
-      this.jwtService.verify(token, keyName)
+    (Strategy as any).JwtVerifier = (
+      token,
+      keyName,
+      __,
+      cb: (err: any, payload: any) => void,
+    ) => {
+      this.jwtService
+        .verify(token, keyName)
         .then(payload => cb(null, payload))
         .catch(err => cb(err, null));
-    }
+    };
   }
 
-  async validate(req: Request, data: any) {
+  async validate(req: any, data: any) {
     const [id, target] = data.sub.split('@');
 
-    req.accessToken = data;
+    req.accessToken = data as any;
 
     switch (target) {
       case 'users':
@@ -46,7 +52,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
   }
 
-  async validateUser(req: Request, id: string) {
+  async validateUser(req: any, id: string) {
     const user = await this.userRepository.findOne(id);
 
     if (!user) {
@@ -56,7 +62,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return plainToClass(User, user);
   }
 
-  async validateClient(req: Request, id: string) {
+  async validateClient(req: any, id: string) {
     const client = await this.clientRepository.findOne(id);
     if (!client) {
       throw new UnauthorizedException();

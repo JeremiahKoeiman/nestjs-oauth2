@@ -1,7 +1,6 @@
 FROM node:lts-alpine as clientBuilder
 
 COPY client/package.json .
-COPY client/yarn.lock .
 
 COPY client/tsconfig.json .
 
@@ -9,18 +8,17 @@ COPY client/views views
 COPY client/public public
 COPY client/src src
 
-RUN yarn install
+RUN npm install --legacy-peer-deps
 
-RUN yarn build
+RUN npm run build
 
 FROM node:lts-alpine as builder
 
-RUN apk add python make g++
+RUN apk add python3 make g++
 
 COPY package.json .
-COPY yarn.lock .
 
-RUN yarn install
+RUN npm install --legacy-peer-deps
 
 COPY nest-cli.json .
 COPY tsconfig.json .
@@ -30,20 +28,17 @@ COPY src src
 
 ENV NODE_ENV=production
 
-RUN yarn build
+RUN npm run build
 
 FROM node:lts-alpine as prod
 
 WORKDIR /app
 
 COPY --from=builder package.json .
-COPY --from=builder yarn.lock .
 
 ENV NODE_ENV=production
 
-RUN yarn install --prod --frozen-lockfile --ignore-optional && \
-    rm -rf node_modules/@types && \
-    yarn cache clean
+RUN npm install --ignore-optional --legacy-peer-deps
 
 COPY ormconfig.js .
 

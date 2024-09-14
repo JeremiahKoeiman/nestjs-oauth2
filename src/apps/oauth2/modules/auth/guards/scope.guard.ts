@@ -4,9 +4,7 @@ import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class ScopeGuard implements CanActivate {
-  constructor(
-    protected readonly ref: Reflector,
-  ) {}
+  constructor(protected readonly ref: Reflector) {}
 
   private getScopes(context: ExecutionContext) {
     return [
@@ -16,7 +14,8 @@ export class ScopeGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const token = context.switchToHttp().getRequest<Request>().accessToken;
+    const token = (context.switchToHttp().getRequest<Request>() as any)
+      .accessToken;
     if (!token) {
       return false;
     }

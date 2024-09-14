@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+} from '@nestjs/common';
 import { OAuthException } from '@app/modules/oauth2/errors';
 import { Response } from 'express';
 
@@ -18,7 +23,7 @@ export class RFC6749ExceptionFilter implements ExceptionFilter {
       oAuthException = exception;
     }
 
-    const res = host.switchToHttp().getResponse<Response>();
+    const res = host.switchToHttp().getResponse<Response>() as any;
 
     return res
       .status(oAuthException.getStatus())
@@ -31,16 +36,11 @@ export class RFC6749ExceptionFilter implements ExceptionFilter {
     if (typeof response === 'string') {
       const error = response;
       const description = exception.message;
-      return [
-        error,
-        description !== error ? description : undefined,
-      ];
+      return [error, description !== error ? description : undefined];
     }
-    if (Array.isArray((response as any).message)) { // Validation error
-      return [
-        'invalid_request',
-        (response as any).message[0],
-      ];
+    if (Array.isArray((response as any).message)) {
+      // Validation error
+      return ['invalid_request', (response as any).message[0]];
     }
     return [
       (response as any).message || exception.message,

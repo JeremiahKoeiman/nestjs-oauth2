@@ -8,40 +8,34 @@ export class SocialController {
   @UseGuards(AuthGuard('facebook'))
   @Get('/facebook')
   async facebookCallback(
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: any,
+    @Res() res: any,
     @Query('state') intended: string,
   ) {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       req.logIn(req.user, err => (err ? reject(err) : resolve()));
     });
 
-    const returnTo = (intended && intended !== 'undefined') ? decodeURIComponent(intended) : '/';
+    const returnTo =
+      intended && intended !== 'undefined' ? decodeURIComponent(intended) : '/';
 
-    return handleSuccessLogin(
-      req, res,
-      returnTo,
-      false,
-    );
+    return handleSuccessLogin(req, res, returnTo, false);
   }
 
   @UseGuards(AuthGuard('google'))
   @Get('/google')
   async googleCallback(
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: any,
+    @Res() res: any,
     @Query('state') intended: string,
   ) {
-    await new Promise((resolve, reject) => {
-      req.logIn(req.user, err => (err ? reject(err) : resolve()));
+    await new Promise<void>((resolve, reject) => {
+      req.logIn(req.user as any, err => (err ? reject(err) : resolve()));
     });
 
-    const returnTo = (intended && intended !== 'undefined') ? decodeURIComponent(intended) : '/';
+    const returnTo =
+      intended && intended !== 'undefined' ? decodeURIComponent(intended) : '/';
 
-    return handleSuccessLogin(
-      req, res,
-      returnTo,
-      false,
-    );
+    return handleSuccessLogin(req, res, returnTo, false);
   }
 }

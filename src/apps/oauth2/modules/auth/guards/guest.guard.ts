@@ -8,9 +8,9 @@ import { GuestException } from '../errors';
 @Injectable()
 export class GuestGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<Request>();
+    const req = context.switchToHttp().getRequest<Request>() as any;
 
-    if (req.user) {
+    if (req.user as any) {
       throw new GuestException();
     }
     return true;

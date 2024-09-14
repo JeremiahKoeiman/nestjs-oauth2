@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
 
 export function handleSuccessLogin(
-  req: Request,
-  res: Response,
+  req: any,
+  res: any,
   intended: string,
-  shouldRemember: boolean
+  shouldRemember: boolean,
 ) {
   if (shouldRemember) {
     req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
   } else {
-    req.session.cookie.expires = false;
+    (req.session.cookie as any).expires = false;
   }
 
-  req.session.passport.info = {
+  (req.session as any).passport.info = {
     ip: req.ip,
     userAgent: req.headers['user-agent'],
     createdAt: Date.now(),

@@ -1,4 +1,11 @@
-import { Controller, Get, Render, Req, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Render,
+  Req,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthenticatedGuard, CurrentUser } from './modules/auth';
 import { User } from './entities';
 import { Request } from 'express';
@@ -17,29 +24,27 @@ export class AppController {
 
   @Get('/')
   @Render('index')
-  homepage(
-    @Req() req: Request,
-    @CurrentUser() user?: User,
-  ) {
+  homepage(@Req() req: any, @CurrentUser() user?: User) {
     return {
       user: classToPlain(user),
       grants: this.rb.getGrants(),
-      csrfToken: req.csrfToken(),
-      currentSession: req.session?.id,
-      facebookLoginUrl: this.config.get('social.facebook.loginUrl')(encodeURIComponent('/')),
-      googleLoginUrl: this.config.get('social.google.loginUrl')(encodeURIComponent('/')),
+      csrfToken: req.csrfToken() as any,
+      currentSession: req.session?.id as any,
+      facebookLoginUrl: this.config.get('social.facebook.loginUrl')(
+        encodeURIComponent('/'),
+      ),
+      googleLoginUrl: this.config.get('social.google.loginUrl')(
+        encodeURIComponent('/'),
+      ),
       appName: this.config.get('app.appName'),
-    }
+    };
   }
 
   @UseFilters(ForbiddenExceptionFilter)
   @UseGuards(AuthenticatedGuard)
   @Get('/app*')
   @Render('index')
-  getApp(
-    @Req() req: Request,
-    @CurrentUser() user?: User,
-  ) {
+  getApp(@Req() req: any, @CurrentUser() user?: User) {
     return this.homepage(req, user);
   }
 }

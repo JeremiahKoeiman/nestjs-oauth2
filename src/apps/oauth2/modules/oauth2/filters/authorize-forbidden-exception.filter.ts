@@ -11,8 +11,10 @@ import * as qs from 'querystring';
 @Catch(ForbiddenException)
 export class AuthorizeForbiddenExceptionFilter extends AuthForbiddenExceptionFilter {
   catch(exception: ForbiddenException, host: ArgumentsHost): any {
-    const res = host.switchToHttp().getResponse<Response>();
-    const req = host.switchToHttp().getRequest<Request<any, any, any, AuthorizeDto>>();
+    const res = host.switchToHttp().getResponse<Response>() as any;
+    const req = host
+      .switchToHttp()
+      .getRequest<Request<any, any, any, AuthorizeDto>>() as any;
 
     /**
      * If prompt=none, redirect to the redirect_uri with error
@@ -33,7 +35,11 @@ export class AuthorizeForbiddenExceptionFilter extends AuthForbiddenExceptionFil
       const newQuery = { ...req.query };
       newQuery.prompt = PromptTypes.consent;
 
-      return super.catch(exception, host, `${baseUrl}?${qs.stringify(newQuery)}`)
+      return super.catch(
+        exception,
+        host,
+        `${baseUrl}?${qs.stringify(newQuery)}`,
+      );
     }
 
     return super.catch(exception, host);

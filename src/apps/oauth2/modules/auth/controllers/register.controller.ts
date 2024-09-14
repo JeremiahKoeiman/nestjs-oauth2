@@ -1,4 +1,16 @@
-import { Body, Controller, forwardRef, Get, Inject, Post, Query, Render, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  forwardRef,
+  Get,
+  Inject,
+  Post,
+  Query,
+  Render,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { RegisterDto } from '../dtos';
 import { Request, Response } from 'express';
 import { GuestGuard } from '../guards';
@@ -16,24 +28,24 @@ export class RegisterController {
   async handleRegister(
     @Body() data: RegisterDto,
     @Query('redirect_uri') intended: string,
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: any,
+    @Res() res: any,
   ) {
     const user = await this.registerService.register(data);
 
-    await new Promise((resolve, reject) => req.login(user, err => {
-      if (err) {
-        return reject(err);
-      }
-      resolve();
-    }));
+    await new Promise<void>((resolve, reject) =>
+      req.login(user, err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      }),
+    );
 
     if (req.accepts('json')) {
-      return res
-      .status(201)
-      .json({
+      return res.status(201).json({
         returnTo: intended || '/',
-      })
+      });
     }
 
     res.redirect(intended || '/');
@@ -41,11 +53,9 @@ export class RegisterController {
 
   @Get('register')
   @Render('index')
-  showRegisterForm(
-    @Req() req: Request,
-  ) {
+  showRegisterForm(@Req() req: any) {
     return {
       csrfToken: req.csrfToken(),
-    }
+    };
   }
 }

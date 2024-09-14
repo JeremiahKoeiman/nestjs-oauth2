@@ -10,7 +10,9 @@ import { PromptTypes } from '../constants';
 @Injectable()
 export class AuthorizeGuard extends AuthenticatedGuard {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<Request<any, any, any, AuthorizeDto>>();
+    const req = context
+      .switchToHttp()
+      .getRequest<Request<any, any, any, AuthorizeDto>>() as any;
     const { query } = req;
     /**
      * If prompt=login we must show the login form again
@@ -18,7 +20,7 @@ export class AuthorizeGuard extends AuthenticatedGuard {
      * catch (@see AuthorizeForbiddenExceptionFilter) to redirect to the login page
      */
     if (query.prompt === PromptTypes.login) {
-      req.logout();
+      req.logout(() => console.log('LOGOUT'));
     }
 
     return super.canActivate(context);

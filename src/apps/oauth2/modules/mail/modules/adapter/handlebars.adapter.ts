@@ -9,16 +9,14 @@ import { MailerOptions } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class HandlebarsAdapter extends MailerHandlebarsAdapter {
-  constructor(
-    private readonly config: ConfigService,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     super();
 
-    const partialsDirs = config.get('mail.partials');
+    const partialsDirs = this.configService.get('mail.partials');
 
     handlebars.registerHelper(hbsLayouts(handlebars));
 
-    handlebars.registerHelper('currentYear', () => (new Date()).getFullYear());
+    handlebars.registerHelper('currentYear', () => new Date().getFullYear());
 
     partialsDirs.forEach(this.registerDir);
   }
@@ -26,7 +24,10 @@ export class HandlebarsAdapter extends MailerHandlebarsAdapter {
   registerDir(dir: string) {
     fs.readdirSync(dir).forEach(file => {
       const name = path.parse(file).name;
-      handlebars.registerPartial(name, fs.readFileSync(path.resolve(dir, file), 'utf8'));
+      handlebars.registerPartial(
+        name,
+        fs.readFileSync(path.resolve(dir, file), 'utf8'),
+      );
     });
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { forwardRef, HttpService, Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-strategy';
@@ -32,46 +33,56 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async authenticate(req: Request) {
+  async authenticate(req: any) {
     let user: User;
 
-    const { code } = req.query;
+    const { code } = req.query as any;
 
     if (!code) {
       return this.fail({ message: 'Invalid callback' }, 400);
     }
 
     try {
-      const { data: { id_token } } = await this.httpService.post(
-        this.config.get('social.google.tokenUrl'),
-        qs.stringify({
-          client_id: this.config.get('social.google.id'),
-          client_secret: this.config.get('social.google.secret'),
-          redirect_uri: 'http://localhost:4000/auth/social/google',
-          scope: ['email', 'profile', 'openid'].join(' '),
-          code: code as string,
-          grant_type: 'authorization_code',
-        }),
-      ).toPromise();
+      const {
+        data: { id_token },
+      } = await this.httpService
+        .post(
+          this.config.get('social.google.tokenUrl'),
+          qs.stringify({
+            client_id: this.config.get('social.google.id'),
+            client_secret: this.config.get('social.google.secret'),
+            redirect_uri: 'http://localhost:4000/auth/social/google',
+            scope: ['email', 'profile', 'openid'].join(' '),
+            code: code as string,
+            grant_type: 'authorization_code',
+          }),
+        )
+        .toPromise();
       const data = this.jwtService.decode<GoogleUserData>(id_token);
 
-      let user: User;
-      user = await this.userService.findFromSocial('google', data.sub, data.email);
+      user = await this.userService.findFromSocial(
+        'google',
+        data.sub,
+        data.email,
+      );
       if (!user) {
-        user = await this.userService.createFromSocial({
-          email: data.email,
-          firstName: data.given_name,
-          lastName: data.family_name,
-          nickname: data.name,
-        }, {
-          picture: data.picture,
-          socialId: data.sub,
-          type: 'google',
-        });
+        user = await this.userService.createFromSocial(
+          {
+            email: data.email,
+            firstName: data.given_name,
+            lastName: data.family_name,
+            nickname: data.name,
+          },
+          {
+            picture: data.picture,
+            socialId: data.sub,
+            type: 'google',
+          },
+        );
       }
       const info = {
-        ip: req.ip,
-        userAgent: req.headers['user-agent'],
+        ip: req.ip as any,
+        userAgent: req.headers['user-agent'] as any,
         createdAt: Date.now(),
         social: 'google',
       };

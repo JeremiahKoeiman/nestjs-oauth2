@@ -7,8 +7,8 @@ import { ResponseModes } from '../constants';
 @Catch(OAuthException)
 export class OAuthExceptionFilter implements ExceptionFilter {
   catch(exception: OAuthException, host: ArgumentsHost): any {
-    const req = host.switchToHttp().getRequest<Request>();
-    const res = host.switchToHttp().getResponse<Response>();
+    const req = host.switchToHttp().getRequest<Request>() as any;
+    const res = host.switchToHttp().getResponse<Response>() as any;
 
     if (req.query.response_mode) {
       return handleResponseMode(
@@ -21,8 +21,6 @@ export class OAuthExceptionFilter implements ExceptionFilter {
 
     // TODO support multiple content-types
 
-    return res
-      .status(exception.getStatus())
-      .json(exception.getResponse())
+    return res.status(exception.getStatus()).json(exception.getResponse());
   }
 }

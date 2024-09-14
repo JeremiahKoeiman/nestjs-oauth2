@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, ForbiddenException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 
 /**
@@ -7,18 +12,25 @@ import { Request, Response } from 'express';
  */
 @Catch(ForbiddenException)
 export class ForbiddenExceptionFilter implements ExceptionFilter {
-  catch(exception: ForbiddenException, host: ArgumentsHost, urlOverride?: string): any {
-    const res = host.switchToHttp().getResponse<Response>();
-    const req = host.switchToHttp().getRequest<Request>();
+  catch(
+    exception: ForbiddenException,
+    host: ArgumentsHost,
+    urlOverride?: string,
+  ): any {
+    const res = host.switchToHttp().getResponse<Response>() as any;
+    const req = host.switchToHttp().getRequest<Request>() as any;
     /**
      * If there is a user in the session, log him out
      */
     if (req.user) {
-      req.logout();
+      req.logout(() => console.log('FORBIDDEN EXCEPTION LOGOUT'));
     }
     /**
      * Redirect to the login page
      */
-    res.redirect('/auth/login?redirect_uri=' + encodeURIComponent(urlOverride || req.url));
+    res.redirect(
+      '/auth/login?redirect_uri=' +
+        encodeURIComponent(urlOverride || (req.url as any)),
+    );
   }
 }

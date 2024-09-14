@@ -1,10 +1,20 @@
 import {
-  DynamicModule, Global, Inject, Module, OnApplicationShutdown, Provider, Type,
+  DynamicModule,
+  Global,
+  Inject,
+  Module,
+  OnApplicationShutdown,
+  Provider,
+  Type,
 } from '@nestjs/common';
 import { defer } from 'rxjs';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { ModuleRef } from '@nestjs/core';
-import { RedisModuleAsyncOptions, RedisModuleOptions, RedisOptionsFactory } from './interfaces';
+import {
+  RedisModuleAsyncOptions,
+  RedisModuleOptions,
+  RedisOptionsFactory,
+} from './interfaces';
 import { getConnectionToken, handleRetry } from './utils';
 import { REDIS_MODULE_OPTIONS } from './constants';
 
@@ -18,7 +28,9 @@ export class RedisCoreModule implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    const connection = this.moduleRef.get<Redis.Redis>(getConnectionToken(this.options.connectionName));
+    const connection = this.moduleRef.get<Redis>(
+      getConnectionToken(this.options.connectionName),
+    );
     if (connection) {
       await connection.disconnect();
     }
@@ -35,13 +47,8 @@ export class RedisCoreModule implements OnApplicationShutdown {
     };
     return {
       module: RedisCoreModule,
-      providers: [
-        connectionProvider,
-        redisModuleOptions,
-      ],
-      exports: [
-        connectionProvider,
-      ],
+      providers: [connectionProvider, redisModuleOptions],
+      exports: [connectionProvider],
     };
   }
 
@@ -64,15 +71,14 @@ export class RedisCoreModule implements OnApplicationShutdown {
     return {
       module: RedisCoreModule,
       imports: options.imports || [],
-      providers: [
-        ...asyncProviders,
-        connectionProvider,
-      ],
+      providers: [...asyncProviders, connectionProvider],
       exports: [connectionProvider],
     };
   }
 
-  private static createAsyncProviders(options: RedisModuleAsyncOptions): Provider[] {
+  private static createAsyncProviders(
+    options: RedisModuleAsyncOptions,
+  ): Provider[] {
     if (options.useExisting || options.useFactory) {
       return [this.createAsyncOptionsProvider(options)];
     }
@@ -86,7 +92,9 @@ export class RedisCoreModule implements OnApplicationShutdown {
     ];
   }
 
-  private static createAsyncOptionsProvider(options: RedisModuleAsyncOptions): Provider {
+  private static createAsyncOptionsProvider(
+    options: RedisModuleAsyncOptions,
+  ): Provider {
     if (options.useFactory) {
       return {
         provide: REDIS_MODULE_OPTIONS,
@@ -96,27 +104,33 @@ export class RedisCoreModule implements OnApplicationShutdown {
     }
     return {
       provide: REDIS_MODULE_OPTIONS,
-      useFactory: async (optionsFactory: RedisOptionsFactory) => await optionsFactory.createRedisOptions(options.connectionName),
-      inject: [(options.useClass || options.useExisting) as Type<RedisOptionsFactory>],
+      useFactory: async (optionsFactory: RedisOptionsFactory) =>
+        await optionsFactory.createRedisOptions(options.connectionName),
+      inject: [
+        (options.useClass || options.useExisting) as Type<RedisOptionsFactory>,
+      ],
     };
   }
 
   private static async createConnectionFactory(options: RedisModuleOptions) {
-    return defer(() => new Promise((resolve, reject) => {
-      let redis: Redis.Redis;
-      if (typeof options.url === 'string') {
-        redis = new Redis(options.url, options.ioredis);
-      } else {
-        redis = new Redis(options.ioredis);
-      }
-      redis.on('connect', () => {
-        resolve(redis);
-      });
-      redis.on('error', (error) => {
-        reject(error);
-      });
-    }))
-    .pipe(handleRetry(options.retryAttempts, options.retryDelay))
-    .toPromise();
+    return defer(
+      () =>
+        new Promise((resolve, reject) => {
+          let redis: Redis;
+          if (typeof options.url === 'string') {
+            redis = new Redis(options.url, options.ioredis);
+          } else {
+            redis = new Redis(options.ioredis);
+          }
+          redis.on('connect', () => {
+            resolve(redis);
+          });
+          redis.on('error', error => {
+            reject(error);
+          });
+        }),
+    )
+      .pipe(handleRetry(options.retryAttempts, options.retryDelay))
+      .toPromise();
   }
 }

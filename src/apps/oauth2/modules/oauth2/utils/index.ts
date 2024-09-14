@@ -1,7 +1,22 @@
-import { Response } from 'express';
+import { Response as ExpressResponse } from 'express';
 import { ResponseModes } from '../constants';
 import * as qs from 'querystring';
 import { AuthRequest } from '../auth.request';
+
+export const makeRedirectUri = (
+  uri: string,
+  params?: Record<string, any>,
+  hash?: Record<string, any>,
+) => {
+  const url = new URL(uri);
+  if (params) {
+    url.search = qs.stringify(params);
+  }
+  if (hash) {
+    url.hash = qs.stringify(hash);
+  }
+  return url.toString();
+};
 
 /**
  * Handle consent redirect, based on response_mode param
@@ -15,35 +30,26 @@ import { AuthRequest } from '../auth.request';
  * @param params
  */
 export const handleResponseMode = (
-  res: Response,
+  res: any,
   responseMode: ResponseModes,
   returnTo: string,
   params: Record<string, any>,
 ) => {
   switch (responseMode) {
     case ResponseModes.query:
-      return res.status(302).redirect(this.makeRedirectUri(returnTo, params));
+      return res.status(302).redirect(makeRedirectUri(returnTo, params));
     case ResponseModes.fragment:
-      return res.status(302).redirect(this.makeRedirectUri(returnTo, undefined, params));
+      return res
+        .status(302)
+        .redirect(makeRedirectUri(returnTo, undefined, params));
     case ResponseModes.form_post:
-      return res.render('form_post', {
+      return (res as any).render('form_post', {
         returnTo,
         hiddenFields: params,
         layout: false,
       });
   }
-}
-
-export const makeRedirectUri = (uri: string, params?: Record<string, any>, hash?: Record<string, any>) => {
-  const url = new URL(uri);
-  if (params) {
-    url.search = qs.stringify(params);
-  }
-  if (hash) {
-    url.hash = qs.stringify(hash);
-  }
-  return url.toString();
-}
+};
 
 export const getAuthRequestFromSession = (session: any): AuthRequest => {
   const authRequest = session.authRequest as AuthRequest;
@@ -52,4 +58,4 @@ export const getAuthRequestFromSession = (session: any): AuthRequest => {
   }
   delete session.authRequest;
   return authRequest;
-}
+};

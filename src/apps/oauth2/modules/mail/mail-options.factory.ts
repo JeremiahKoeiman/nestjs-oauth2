@@ -2,7 +2,6 @@ import { MailerOptions, MailerOptionsFactory } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HandlebarsAdapter } from './modules/adapter';
-import { join } from "path";
 
 @Injectable()
 export class MailOptionsFactory implements MailerOptionsFactory {
@@ -19,6 +18,6 @@ export class MailOptionsFactory implements MailerOptionsFactory {
         adapter: this.adapter,
         ...config.template,
       },
-    }
+    };
   }
 }

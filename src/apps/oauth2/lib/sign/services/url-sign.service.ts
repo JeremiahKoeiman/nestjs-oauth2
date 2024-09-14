@@ -19,7 +19,10 @@ export class UrlSignService {
     return this.signed.sign(url);
   }
 
-  verifyReq(req: Request): VerifyResult {
-    return this.signed.verifyUrl(req, req => req.connection.remoteAddress);
+  verifyReq(req: any): VerifyResult {
+    return this.signed.verifyUrl(
+      req,
+      req => ((req as unknown) as any).connection.remoteAddress,
+    );
   }
 }

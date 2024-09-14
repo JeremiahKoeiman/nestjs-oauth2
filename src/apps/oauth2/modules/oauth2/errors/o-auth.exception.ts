@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class OAuthException extends HttpException {
@@ -8,13 +9,11 @@ export class OAuthException extends HttpException {
     error_description?: string,
     httpStatusCode = HttpStatus.BAD_REQUEST,
   ) {
-    super(
-      { error, error_description },
-      httpStatusCode,
-    );
+    super({ error, error_description }, httpStatusCode);
 
     this.payload = {
-      error, error_description,
+      error,
+      error_description,
     };
   }
 
@@ -27,7 +26,8 @@ export class OAuthException extends HttpException {
   }
 
   static invalidRequest(param?: string) {
-    let message = 'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.';
+    let message =
+      'The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.';
     if (param) {
       message += ` Check the ${param} parameter`;
     }
@@ -51,7 +51,7 @@ export class OAuthException extends HttpException {
       'unauthorized_client',
       'Client cannot handle the specific grant_type',
       HttpStatus.BAD_REQUEST,
-    )
+    );
   }
 
   static invalidGrant() {
@@ -67,11 +67,7 @@ export class OAuthException extends HttpException {
     if (scope) {
       message += `: ${scope}`;
     }
-    return new OAuthException(
-      'invalid_scope',
-      message,
-      HttpStatus.BAD_REQUEST,
-    );
+    return new OAuthException('invalid_scope', message, HttpStatus.BAD_REQUEST);
   }
 
   static invalidRefreshToken(hint?: string) {
@@ -95,7 +91,8 @@ export class OAuthException extends HttpException {
   }
 
   static accessDenied(msg?: string) {
-    let message = 'The resource owner or authorization server denied the request.';
+    let message =
+      'The resource owner or authorization server denied the request.';
     if (msg) {
       message += ` ${msg}`;
     }

@@ -7,14 +7,10 @@ import { OAuthException } from '@app/modules/oauth2/errors';
 
 export type IPkceGuard = CanActivate;
 
-export const PkceGuard: (
-  step: 'challenge' | 'verifier',
-) => Type<IPkceGuard> = memoize(createPkceGuard);
-
 function createPkceGuard(step: 'challenge' | 'verifier'): Type<IPkceGuard> {
   class MixinPkceGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
-      const req = context.switchToHttp().getRequest<Request>();
+      const req = context.switchToHttp().getRequest<Request>() as any;
       if (!req.client) {
         return false;
       }
@@ -42,3 +38,7 @@ function createPkceGuard(step: 'challenge' | 'verifier'): Type<IPkceGuard> {
   const guard = mixin(MixinPkceGuard);
   return guard;
 }
+
+export const PkceGuard: (
+  step: 'challenge' | 'verifier',
+) => Type<IPkceGuard> = memoize(createPkceGuard);

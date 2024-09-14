@@ -1,4 +1,9 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-strategy';
 import { User } from '@app/entities';
@@ -19,10 +24,10 @@ export class TfaStrategy extends PassportStrategy(Strategy, 'otp') {
     });
   }
 
-  async authenticate(req: Request) {
+  async authenticate(req: any) {
     let user: User;
 
-    const { tfaSecret } = req.session;
+    const { tfaSecret } = req.session as any;
     const { code: token } = req.body;
 
     if (!tfaSecret) {
@@ -50,7 +55,7 @@ export class TfaStrategy extends PassportStrategy(Strategy, 'otp') {
     });
 
     if (!verified) {
-      return this.error(new BadRequestException('Invalid OTP token'))
+      return this.error(new BadRequestException('Invalid OTP token'));
     }
 
     return this.success(user, info);

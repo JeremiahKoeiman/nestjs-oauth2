@@ -5,12 +5,12 @@ import { Request, Response } from 'express';
 export class LogoutController {
   @Post('logout')
   handleLogout(
-    @Req() req: Request,
-    @Res() res: Response,
+    @Req() req: any,
+    @Res() res: any,
     @Body('redirect_uri') redirectTo: string,
     @Query('redirect_uri') redirectToQ: string,
   ) {
-    req.logOut();
+    req.logOut(() => console.log('LOGOUT CONTROLLER LOGOUT'));
     res.redirect(redirectTo || redirectToQ || '/');
   }
 }
