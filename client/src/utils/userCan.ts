@@ -2,7 +2,11 @@ import { dummyGrants, dummyUser } from './dummy';
 
 export type Perms = 'create:any' | 'update:any' | 'delete:any' | 'read:any';
 
-export const userCan = (resource: string, perm: Perms, user?: { role: string }) => {
+export const userCan = (
+  resource: string,
+  perm: Perms,
+  user?: { role: string },
+) => {
   if (!user) {
     if (process.env.NODE_ENV === 'development') {
       user = dummyUser;
@@ -24,5 +28,5 @@ export const userCan = (resource: string, perm: Perms, user?: { role: string }) 
     return false;
   }
   const res = userGrants[resource];
-  return !!(res[perm]?.length);
-}
+  return !!res[perm]?.length;
+};
