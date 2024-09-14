@@ -1,8 +1,3 @@
-# IMPORTANT
-
-- node verion 16.20.2
-- npm version 9.9.3
-
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
